@@ -1,0 +1,85 @@
+{{define "page"}}
+
+<style>
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .metric label {
+    color: #666;
+    font-weight: bold;
+  }
+
+  .metric span {
+    font-size: 1.2em;
+    margin-top: 5px;
+  }
+
+</style>
+
+<h2>SMART Status Report</h2>
+<div class="card">
+  <div class="metrics">
+    <div class="metric">
+      <label>Model Name</label>
+      <span>{{.info.ModelName}}</span>
+    </div>
+    <div class="metric">
+      <label>Serial Number</label>
+      <span>{{.info.SerialNumber}}</span>
+    </div>
+    <div class="metric">
+      <label>Temperature</label>
+      <span>{{.info.Temperature.Current}}°C</span>
+    </div>
+    <div class="metric">
+      <label>Power Cycles</label>
+      <span>{{.info.PowerCycleCount}}</span>
+    </div>
+    <div class="metric">
+      <label>Power On Time</label>
+      <span>{{.info.PowerOnTime.Hours}} hours</span>
+    </div>
+    <div class="metric">
+      <label>SMART Status</label>
+      <span class="status {{if .info.SmartStatus.Passed}}pass{{else}}fail{{end}}">
+        {{if .info.SmartStatus.Passed}}PASS{{else}}FAIL{{end}}
+      </span>
+    </div>
+  </div>
+</div>
+
+{{if .info.ATASmartAttributes.Table}}
+<h3>ATASmartAttributes</h3>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Attribute</th>
+      <th>Value</th>
+      <th>Worst</th>
+      <th>Threshold</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .info.ATASmartAttributes.Table}}
+    <tr>
+      <td>{{.ID}}</td>
+      <td>{{.Name}}</td>
+      <td>{{.Value}}</td>
+      <td>{{.Worst}}</td>
+      <td>{{.Thresh}}</td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
+
+{{end}}

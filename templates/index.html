@@ -1,0 +1,29 @@
+{{define "page"}}
+
+<style>
+  .list a {
+    color: #111;
+    text-decoration: none;
+  }
+</style>
+
+<h2>Index</h2>
+
+<ul class="list">
+  {{range .reports}}
+  <a href="/report?dev={{.Device}}" class="list-item flex flex-jc-between flex-center">
+    <div class="report-meta">
+      <strong>{{.Name}}</strong>
+      <span>({{.Device}})</span>
+      <div class="timestamp">{{.CreatedAt.Format "2006-01-02 15:04:05"}}</div>
+    </div>
+    <div>
+      <span>{{.Temperature}}°C</span>
+      <span class="status {{if .Status}}pass{{else}}fail{{end}}">
+        {{if .Status}}PASS{{else}}FAIL{{end}}
+      </span>
+    </div>
+  </a>
+  {{end}}
+</ul>
+{{end}}

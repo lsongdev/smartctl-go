@@ -1,0 +1,7 @@
+
+
+listen: :8080
+
+disks:
+ - /dev/disk1
+ - /dev/disk2

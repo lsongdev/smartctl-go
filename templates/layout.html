@@ -1,0 +1,44 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disk Monitor</title>
+  <style>
+    @import "https://lsong.org/css/stylesheet.css";
+    @import "https://lsong.org/stylesheets/list.css";
+    @import "https://lsong.org/stylesheets/table.css";
+
+
+    .status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .status.pass {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .status.fail {
+      background: #f44336;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1><a href="/">Disk Monitor</a></h1>
+    <main>
+      {{template "page" .}}
+    </main>
+  </div>
+</body>
+
+</html>
+
+{{end}}
