@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	_ "github.com/glebarez/go-sqlite"
@@ -104,6 +105,31 @@ func (s *Server) GetReport(device string) (report *Report, err error) {
 	return
 }
 
+func (s *Server) GetReports(dev string) (reports []Report, err error) {
+	rows, err := s.db.Query("SELECT * FROM reports WHERE device = ? ORDER BY created_at DESC", dev)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		report := Report{}
+		err = rows.Scan(
+			&report.ID,
+			&report.Name,
+			&report.Device,
+			&report.Temperature,
+			&report.Status,
+			&report.FileName,
+			&report.CreatedAt,
+		)
+		if err != nil {
+			return
+		}
+		reports = append(reports, report)
+	}
+	return
+}
+
 func (s *Server) RunCheck(device string) (err error) {
 	info, err := smartctl.Check(device)
 	if err != nil {
@@ -158,12 +184,22 @@ func (s *Server) Render(w http.ResponseWriter, name string, data H) {
 	if data == nil {
 		data = H{}
 	}
-	// tmpl, err := template.ParseFiles("templates/layout.html", "templates/"+name+".html")
-	tmpl, err := template.New("").ParseFS(templates.Files, "layout.html", name+".html")
+
+	funcMap := template.FuncMap{
+		"multiply": func(a, b float64) float64 {
+			return a * b
+		},
+		"divide": func(a, b int64) float64 {
+			return float64(a) / float64(b)
+		},
+	}
+
+	tmpl, err := template.New("").Funcs(funcMap).ParseFS(templates.Files, "layout.html", name+".html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	err = tmpl.ExecuteTemplate(w, "layout", data)
 	if err != nil {
 		log.Println(err)
@@ -194,17 +230,20 @@ func (s *Server) IndexView(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) ReportView(w http.ResponseWriter, r *http.Request) {
 	dev := r.URL.Query().Get("dev")
-	report, err := s.GetReport(dev)
+	idx := r.URL.Query().Get("index")
+	reports, err := s.GetReports(dev)
 	if err != nil {
 		s.Error(w, err)
 		return
 	}
-	info, err := smartctl.Open(report.FileName)
+	i, _ := strconv.Atoi(idx)
+	info, err := smartctl.Open(reports[i].FileName)
 	if err != nil {
 		s.Error(w, err)
 		return
 	}
 	s.Render(w, "report", H{
-		"info": info,
+		"info":    info,
+		"reports": reports,
 	})
 }

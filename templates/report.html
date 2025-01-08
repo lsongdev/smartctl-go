@@ -21,7 +21,6 @@
     font-size: 1.2em;
     margin-top: 5px;
   }
-
 </style>
 
 <h2>SMART Status Report</h2>
@@ -81,5 +80,18 @@
   </tbody>
 </table>
 {{end}}
+
+<h3>History</h3>
+<ul class="history-list">
+  {{range $index, $report := .reports}}
+  <li>
+    <a href="/report?dev={{.Device}}&index={{$index}}" class="history-item">
+      {{$report.CreatedAt.Format "2006-01-02 15:04:05"}}
+    </a>
+    <span>{{$report.Temperature}}°C</span>
+    <span>{{$report.Status}}</span>
+  </li>
+  {{end}}
+</ul>
 
 {{end}}
