@@ -1,10 +1,6 @@
+// Package smartctl reads disk health from smartmontools' smartctl, through
+// its JSON output (smartctl 7.0 and later).
 package smartctl
-
-import (
-	"encoding/json"
-	"os"
-	"os/exec"
-)
 
 type SmartInfo struct {
 	JSONFormatVersion  []int  `json:"json_format_version"`
@@ -52,7 +48,11 @@ type SmartInfo struct {
 
 	LogicalBlockSize  int `json:"logical_block_size"`
 	PhysicalBlockSize int `json:"physical_block_size"`
-	RotationRate      int `json:"rotation_rate"`
+	RotationRate      int `json:"rotation_rate"` // 0 for solid state
+
+	Trim struct {
+		Supported bool `json:"supported"`
+	} `json:"trim"`
 
 	FormFactor struct {
 		ATAValue int    `json:"ata_value"`
@@ -343,25 +343,4 @@ type ScsiErrorCounterLog struct {
 		GigabytesProcessed               string `json:"gigabytes_processed"`
 		TotalUncorrectedErrors           int64  `json:"total_uncorrected_errors"`
 	} `json:"write"`
-}
-
-func Read(data []byte) (info *SmartInfo, err error) {
-	info = &SmartInfo{}
-	err = json.Unmarshal(data, info)
-	return
-}
-
-func Check(dev string) (*SmartInfo, error) {
-	cmd := exec.Command("smartctl", "-a", dev, "--json")
-	cmd.Env = os.Environ()
-	out, _ := cmd.Output()
-	return Read(out)
-}
-
-func Open(path string) (*SmartInfo, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	return Read(data)
 }
